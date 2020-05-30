@@ -1,0 +1,6 @@
+[REPORTS]
+reports=no
+score=no
+
+[MESSAGES CONTROL]
+disable=missing-module-docstring,bad-continuation,missing-class-docstring,missing-function-docstring,invalid-name

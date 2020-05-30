@@ -1,3 +1,16 @@
+Database
+========
+
+- The tables are prefixed with `monmon_`.
+- Database entries use UUIDs as primary keys. This prevents id collision and
+  allows for merging of datasets.
+- Every measurement is saved into the database, this allows the resolution of
+  the measurement to be changed with time. IOW, the lack of data does imply the
+  monitored service was offline.
+  - ATM there is no policy for data retention in place. Data usage will
+    increase with time and will either require manual cleaning or the addition
+    of automated rolling / cleanup.
+
 Exercise
 ========
 
