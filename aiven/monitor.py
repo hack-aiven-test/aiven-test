@@ -5,7 +5,7 @@ import threading
 import time
 import traceback
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from http.client import HTTPConnection, HTTPSConnection
 from logging import Logger, getLogger
 from queue import Queue
@@ -91,7 +91,7 @@ def http_monitor(
     while not stop_event.is_set():
         logger.debug("Starting new measurement")
 
-        measurement_started_at = datetime.now()
+        measurement_started_at = datetime.now(tz=timezone.utc)
 
         try:
             metrics = http_metrics(config, url, connection)
@@ -107,7 +107,7 @@ def http_monitor(
 
         queue.put(measurement)
 
-        elapsed = datetime.now() - measurement_started_at
+        elapsed = datetime.now(tz=timezone.utc) - measurement_started_at
         sleep_for = config.measure_every_sec - elapsed.seconds
 
         if sleep_for > 0:
@@ -167,12 +167,12 @@ def run_monitoring_from_config(user_config: Dict[str, Any]) -> None:
 
     queue: "Queue[HTTPMeasurement]" = Queue()
 
-    for target in valid_config.targets:
-        logger = getLogger(f"monitor.http.{target.parsed_url.netloc}")
+    for measurement in valid_config.measurements:
+        logger = getLogger(f"monitor.http.{measurement.parsed_url.netloc}")
         t = Thread(
             target=http_monitor,
-            name=f"monitor-{target.parsed_url.netloc}",
-            args=(stop_event, target, queue, logger),
+            name=f"monitor-{measurement.parsed_url.netloc}",
+            args=(stop_event, measurement, queue, logger),
             daemon=False,
         )
         t.start()

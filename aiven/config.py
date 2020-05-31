@@ -91,7 +91,7 @@ class HTTPMonitorConfig:
 @dataclass
 class MonitorConfig:
     broker: KafkaBrokerConfig
-    targets: List["HTTPMonitorConfig"]
+    measurements: List["HTTPMonitorConfig"]
 
     SUPPORTED_BROKERS = {
         KAFKA: KafkaBrokerConfig,
@@ -104,8 +104,8 @@ class MonitorConfig:
         broker_names = ", ".join(self.SUPPORTED_BROKERS.keys())
         broker_types = tuple(self.SUPPORTED_BROKERS.values())
 
-        target_names = ", ".join(self.SUPPORTED_MONITORS.keys())
-        target_types = tuple(self.SUPPORTED_MONITORS.values())
+        measurement_names = ", ".join(self.SUPPORTED_MONITORS.keys())
+        measurement_types = tuple(self.SUPPORTED_MONITORS.values())
 
         verify_type(
             self.broker,
@@ -113,10 +113,12 @@ class MonitorConfig:
             f"broker must be one of the {broker_names}, found {self.broker}",
         )
         verify_type_of_list(
-            self.targets, target_types, f"targets should be a list of {target_names}"
+            self.measurements,
+            measurement_types,
+            f"measurements should be a list of {measurement_names}",
         )
 
-        if len(self.targets) == 0:
+        if len(self.measurements) == 0:
             raise ValueError("At least one monitor entry is necessary.")
 
     @classmethod
@@ -128,19 +130,36 @@ class MonitorConfig:
         if broker_type:
             broker = broker_type.from_dict(broker_config)
 
-        targets = []
-        for target in config.get("targets", []):
-            monitor_type = cls.SUPPORTED_MONITORS.get(target.get("type"))
+        measurements = []
+        for measurement in config.get("measurements", []):
+            monitor_type = cls.SUPPORTED_MONITORS.get(measurement.get("type"))
 
             if monitor_type:
-                targets.append(monitor_type.from_dict(target))
+                measurements.append(monitor_type.from_dict(measurement))
 
-        return MonitorConfig(broker, targets)  # type:ignore
+        return MonitorConfig(broker, measurements)  # type:ignore
+
+
+@dataclass
+class PostgreSQLConfig:
+    dsn: str
+
+    def __post_init__(self) -> None:
+        verify_type(self.dsn, (str,), "dsn must be a string")
+
+        if len(self.dsn) == 0:
+            raise ValueError("dsn must be non-empty.")
+
+    @staticmethod
+    def from_dict(config: Dict[str, Any]) -> "PostgreSQLConfig":
+        dsn = config.get("dsn")
+        return PostgreSQLConfig(dsn)  # type:ignore
 
 
 @dataclass
 class PublishConfig:
     broker: KafkaBrokerConfig
+    store: PostgreSQLConfig
 
     SUPPORTED_BROKERS = {
         KAFKA: KafkaBrokerConfig,
@@ -165,4 +184,6 @@ class PublishConfig:
         if broker_type:
             broker = broker_type.from_dict(broker_config)
 
-        return PublishConfig(broker)  # type:ignore
+        store = PostgreSQLConfig.from_dict(config.get("store", {}))
+
+        return PublishConfig(broker, store)  # type:ignore

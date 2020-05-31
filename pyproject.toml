@@ -10,6 +10,7 @@ monmon = 'aiven'
 [tool.poetry.dependencies]
 python = "^3.8"
 kafka-python = "^2.0.1"
+psycopg2 = "^2.8.5"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"

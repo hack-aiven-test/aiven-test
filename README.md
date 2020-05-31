@@ -11,6 +11,28 @@ Database
     increase with time and will either require manual cleaning or the addition
     of automated rolling / cleanup.
 
+
+Testing
+=======
+
+- Install PostgreSQL into the test system, initialize the database, and execute
+  it.
+- Install java, download latest stable version of kafka, and run it:
+
+```sh
+wget 'ftp://ftp.fu-berlin.de/unix/www/apache/kafka/2.5.0/kafka_2.12-2.5.0.tgz'
+tar xzf kafka_2.12-2.5.0.tgz
+cd kafka_2.12-2.5.0
+bin/zookeeper-server-start.sh config/zookeeper.properties
+bin/kafka-server-start.sh config/server.properties
+```
+
+- Create the database tables:
+
+```sh
+cat aiven/sql/20200501-initial-schema.sql | psql -U postgres -d aiven
+```
+
 Exercise
 ========
 
