@@ -1,5 +1,6 @@
 import pickle
 from contextlib import closing
+from logging import getLogger
 from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid1
 
@@ -66,11 +67,15 @@ def update_website_id_mapping(  # type: ignore
 
 
 def run_publish_from_config(user_config: Dict[str, Any]) -> None:
+    logger = getLogger("publishing.http")
+
     valid_config = PublishConfig.from_dict(user_config)
 
     kafka_config = valid_config.broker
     kafka_consumer = KafkaConsumer(
-        kafka_config.topic, bootstrap_servers=kafka_config.bootstrap_servers
+        kafka_config.topic,
+        group_id="aiven-publishers",
+        bootstrap_servers=kafka_config.bootstrap_servers,
     )
 
     conn = psycopg2.connect(valid_config.store.dsn)
@@ -89,6 +94,8 @@ def run_publish_from_config(user_config: Dict[str, Any]) -> None:
             msgs_batch.extend(pickle.loads(msg.value) for msg in topic_messages)
 
         if msgs_batch:
+            logger.debug("Inserting new batch")
+
             update_website_id_mapping(conn, website_to_id, msgs_batch)
 
             insert_batch = [

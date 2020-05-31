@@ -11,12 +11,11 @@ Database
     increase with time and will either require manual cleaning or the addition
     of automated rolling / cleanup.
 
-
 Testing
 =======
 
-- Install PostgreSQL into the test system, initialize the database, and execute
-  it.
+- Install PostgreSQL into the test system, createa a database named aiven, and
+  run postgres.
 - Install java, download latest stable version of kafka, and run it:
 
 ```sh
@@ -31,6 +30,54 @@ bin/kafka-server-start.sh config/server.properties
 
 ```sh
 cat aiven/sql/20200501-initial-schema.sql | psql -U postgres -d aiven
+```
+
+- Produce a configuration file, e.g.:
+
+```json
+{
+    "broker": {
+        "type": "kafka",
+        "topic": "aiven",
+        "bootstrap_servers": ["localhost:9092"]
+    },
+    "store": {
+        "type": "postgresql",
+        "dsn": "dbname=aiven user=postgres"
+    },
+    "measurements": [
+        {
+            "type": "http",
+            "url": "http://duckduckgo.com/",
+            "measure_every_sec": 10,
+            "timeout_sec": 1
+        },
+        {
+            "type": "http",
+            "url": "http://google.com/",
+            "measure_every_sec": 10,
+            "timeout_sec": 1
+        },
+        {
+            "type": "http",
+            "url": "http://localhost:8081/",
+            "measure_every_sec": 10,
+            "timeout_sec": 1
+        },
+        {
+            "type": "http",
+            "url": "http://localhost:8082/",
+            "measure_every_sec": 7,
+            "timeout_sec": 1
+        },
+        {
+            "type": "http",
+            "url": "http://localhost:8083/",
+            "measure_every_sec": 3,
+            "timeout_sec": 1
+        }
+    ]
+}
 ```
 
 Exercise
