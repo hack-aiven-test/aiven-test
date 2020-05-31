@@ -1,15 +1,51 @@
-Database
-========
+Running
+=======
 
-- The tables are prefixed with `monmon_`.
-- Database entries use UUIDs as primary keys. This prevents id collision and
-  allows for merging of datasets.
-- Every measurement is saved into the database, this allows the resolution of
-  the measurement to be changed with time. IOW, the lack of data does imply the
-  monitored service was offline.
-  - ATM there is no policy for data retention in place. Data usage will
-    increase with time and will either require manual cleaning or the addition
-    of automated rolling / cleanup.
+After installing the projectect with `poetry install`, a configuration of the
+project is necessary, this is done using a json file, e.g.:
+
+```json
+{
+    "broker": {
+        "type": "kafka",
+        "topic": "aiven",
+        "bootstrap_servers": ["<server>:<port>"],
+        "ssl": {
+            "cafile": "<path_to_cafile>",
+            "certfile": "<path_to_certfile>",
+            "keyfile": "<path_to_keyfile>"
+        }
+    },
+    "store": {
+        "type": "postgresql",
+        "dsn": "host=<host> port=<port> user=<user> password=<password> dbname=aiven connect_timeout=2"
+    },
+    "measurements": [
+        {
+            "type": "http",
+            "url": "<website>",
+            "measure_every_sec": <frequency_of_measurements>,
+            "timeout_sec": <time_to_wait_for_a_single_measurement>
+        }
+    ]
+}
+```
+
+Note that secrets can be provided via [environment
+vars](https://www.postgresql.org/docs/current/libpq-envars.html).
+
+With this configuration the two utilities can be used. To monitor the
+configured websites the following command can be used:
+
+```sh
+monmon monitor /path/to/config.json
+```
+
+and to consume the measurements and save to a database:
+
+```sh
+monmon publish /path/to/config.json
+```
 
 Testing
 =======
@@ -24,12 +60,6 @@ tar xzf kafka_2.12-2.5.0.tgz
 cd kafka_2.12-2.5.0
 bin/zookeeper-server-start.sh config/zookeeper.properties
 bin/kafka-server-start.sh config/server.properties
-```
-
-- Create the database tables:
-
-```sh
-cat aiven/sql/20200501-initial-schema.sql | psql -U postgres -d aiven
 ```
 
 - Produce a configuration file, e.g.:
@@ -79,6 +109,19 @@ cat aiven/sql/20200501-initial-schema.sql | psql -U postgres -d aiven
     ]
 }
 ```
+
+Database
+========
+
+- The tables are prefixed with `monmon_`.
+- Database entries use UUIDs as primary keys. This prevents id collision and
+  allows for merging of datasets.
+- Every measurement is saved into the database, this allows the resolution of
+  the measurement to be changed with time. IOW, the lack of data does imply the
+  monitored service was offline.
+  - ATM there is no policy for data retention in place. Data usage will
+    increase with time and will either require manual cleaning or the addition
+    of automated rolling / cleanup.
 
 Exercise
 ========
