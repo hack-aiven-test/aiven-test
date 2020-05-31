@@ -3,6 +3,7 @@ import json
 import logging
 
 from aiven.monitor import run_monitoring_from_config
+from aiven.publish import run_publish_from_config
 
 MONITOR_CMD = "monitor"
 PUBLISH_CMD = "publish"
@@ -43,6 +44,6 @@ def main() -> None:
     elif args.command == PUBLISH_CMD:
         config = json.load(args.config)
         args.config.close()
-        print(PUBLISH_CMD)
+        run_publish_from_config(config)
     else:
         parser.print_help()

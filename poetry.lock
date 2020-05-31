@@ -119,6 +119,14 @@ requirements = ["pipreqs", "pip-api"]
 xdg_home = ["appdirs (>=1.4.0)"]
 
 [[package]]
+category = "main"
+description = "Pure Python client for Apache Kafka"
+name = "kafka-python"
+optional = false
+python-versions = "*"
+version = "2.0.1"
+
+[[package]]
 category = "dev"
 description = "A fast and thorough lazy object proxy."
 name = "lazy-object-proxy"
@@ -373,7 +381,7 @@ python-versions = "*"
 version = "1.12.1"
 
 [metadata]
-content-hash = "ea56b5b28ded0e2bee7a97dea949597619a0e697f5edfccf6634e0d256fe86c5"
+content-hash = "dad1234f1258c162772705c54ecdb53e93a8bcb5fce4b2dd66d068929d02d00a"
 python-versions = "^3.8"
 
 [metadata.files]
@@ -416,6 +424,10 @@ flake8 = [
 isort = [
     {file = "isort-4.3.21-py2.py3-none-any.whl", hash = "sha256:6e811fcb295968434526407adb8796944f1988c5b65e8139058f2014cbe100fd"},
     {file = "isort-4.3.21.tar.gz", hash = "sha256:54da7e92468955c4fceacd0c86bd0ec997b0e1ee80d97f67c35a78b719dccab1"},
+]
+kafka-python = [
+    {file = "kafka-python-2.0.1.tar.gz", hash = "sha256:e59ad42dec8c7d54e3fbba0c1f8b54c44d92a3392d88242962d0c29803f2f6f8"},
+    {file = "kafka_python-2.0.1-py2.py3-none-any.whl", hash = "sha256:513431184ecd08e706ca53421ff23e269fc052374084b45b49640419564dd704"},
 ]
 lazy-object-proxy = [
     {file = "lazy-object-proxy-1.4.3.tar.gz", hash = "sha256:f3900e8a5de27447acbf900b4750b0ddfd7ec1ea7fbaf11dfa911141bc522af0"},
