@@ -1,3 +1,4 @@
+import os
 import pickle
 from contextlib import closing
 from logging import getLogger
@@ -66,20 +67,42 @@ def update_website_id_mapping(  # type: ignore
         website_to_id.update(cursor.fetchall())
 
 
+def maybe_create_tables(conn) -> None:  # type: ignore
+    # This is just nice to have for testing, a proper production solution would
+    # need migrations.
+    dirname = os.path.dirname(__file__)
+    filename = os.path.join(dirname, "sql", "20200501-initial-schema.sql")
+
+    with conn, closing(conn.cursor()) as cursor, open(filename) as initial_schema:
+        cursor.execute(initial_schema.read())
+
+
 def run_publish_from_config(user_config: Dict[str, Any]) -> None:
     logger = getLogger("publishing.http")
 
     valid_config = PublishConfig.from_dict(user_config)
 
-    kafka_config = valid_config.broker
-    kafka_consumer = KafkaConsumer(
-        kafka_config.topic,
-        group_id="aiven-publishers",
-        bootstrap_servers=kafka_config.bootstrap_servers,
-    )
+    broker = valid_config.broker
+
+    args: Dict[str, Any] = {
+        "group_id": "aiven-publishers",
+        "bootstrap_servers": broker.bootstrap_servers,
+    }
+    if broker.ssl:
+        args["ssl_cafile"] = broker.ssl.cafile
+        args["ssl_certfile"] = broker.ssl.certfile
+        args["ssl_keyfile"] = broker.ssl.keyfile
+        args["security_protocol"] = "SSL"
+
+    if broker.api_version:
+        args["api_version"] = broker.api_version
+
+    kafka_consumer = KafkaConsumer(broker.topic, **args)
 
     conn = psycopg2.connect(valid_config.store.dsn)
     website_to_id: Dict[str, str] = dict()
+
+    maybe_create_tables(conn)
 
     while True:
         # TODO: Consider what to do if the datetime object is time zone

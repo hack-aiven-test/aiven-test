@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import ParseResult, urlparse
 
 KAFKA = "kafka"
@@ -21,9 +21,30 @@ def verify_type_of_list(values: Any, types: Tuple[type, ...], errormsg: str,) ->
 
 
 @dataclass
+class KafkaBrokerSSLConfig:
+    cafile: str
+    certfile: str
+    keyfile: str
+
+    def __post_init__(self) -> None:
+        verify_type(self.cafile, (str,), "cafile must be a string")
+        verify_type(self.certfile, (str,), "certfile must be a string")
+        verify_type(self.keyfile, (str,), "keyfile must be a string")
+
+    @staticmethod
+    def from_dict(config: Dict[str, Any]) -> "KafkaBrokerSSLConfig":
+
+        return KafkaBrokerSSLConfig(
+            config.get("cafile"), config.get("certfile"), config.get("keyfile"),  # type:ignore
+        )
+
+
+@dataclass
 class KafkaBrokerConfig:
     bootstrap_servers: List[str]
     topic: str
+    ssl: Optional[KafkaBrokerSSLConfig]
+    api_version: Optional[Tuple[int]]
 
     def __post_init__(self) -> None:
         verify_type(self.topic, (str,), "topic must be a string")
@@ -34,11 +55,25 @@ class KafkaBrokerConfig:
         if len(self.bootstrap_servers) == 0:
             raise ValueError("bootstrap_servers must not be an empty list")
 
+        if self.api_version and not all(isinstance(v, int) for v in self.api_version):
+            raise ValueError(
+                "api_version must be a list of numbers representing the server's version"
+            )
+
+        self.api_version = tuple(self.api_version)
+
     @staticmethod
     def from_dict(config: Dict[str, Any]) -> "KafkaBrokerConfig":
         servers = config.get("bootstrap_servers", list())
         topic = config.get("topic")
-        return KafkaBrokerConfig(servers, topic)  # type:ignore
+        ssl_config_data = config.get("ssl")
+        api_version = config.get("api_version")
+
+        ssl_config: Optional[KafkaBrokerSSLConfig] = None
+        if ssl_config_data:
+            ssl_config = KafkaBrokerSSLConfig.from_dict(ssl_config_data)
+
+        return KafkaBrokerConfig(servers, topic, ssl_config, api_version)  # type:ignore
 
 
 @dataclass

@@ -163,7 +163,18 @@ def run_monitoring_from_config(user_config: Dict[str, Any]) -> None:
     stop_event = Event()
     install_stop_hooks(stop_event)
 
-    kafka_producer = KafkaProducer(bootstrap_servers=valid_config.broker.bootstrap_servers)
+    broker = valid_config.broker
+    args: Dict[str, Any] = {
+        "bootstrap_servers": broker.bootstrap_servers,
+    }
+
+    if broker.ssl:
+        args["ssl_cafile"] = broker.ssl.cafile
+        args["ssl_certfile"] = broker.ssl.certfile
+        args["ssl_keyfile"] = broker.ssl.keyfile
+        args["security_protocol"] = "SSL"
+
+    kafka_producer = KafkaProducer(**args)
 
     queue: "Queue[HTTPMeasurement]" = Queue()
 
