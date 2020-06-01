@@ -59,12 +59,13 @@ def update_website_id_mapping(  # type: ignore
         if measurement.config.url not in website_to_id
     )
 
-    with conn, closing(conn.cursor()) as cursor:
-        cursor.executemany(MAYBE_INSERT_WEBSITE, uncached_website_ids)
+    if uncached_website_ids:
+        with conn, closing(conn.cursor()) as cursor:
+            cursor.executemany(MAYBE_INSERT_WEBSITE, uncached_website_ids)
 
-    with closing(conn.cursor()) as cursor:
-        cursor.execute("SELECT website, id FROM monmon_website")
-        website_to_id.update(cursor.fetchall())
+        with closing(conn.cursor()) as cursor:
+            cursor.execute("SELECT website, id FROM monmon_website")
+            website_to_id.update(cursor.fetchall())
 
 
 def maybe_create_tables(conn) -> None:  # type: ignore
@@ -116,7 +117,6 @@ def run_publish_from_config(user_config: Dict[str, Any]) -> None:
         for topic_messages in kafka_consumer.poll(timeout_ms=1000).values():
             msgs_batch.extend(pickle.loads(msg.value) for msg in topic_messages)
 
-        print(msgs_batch)
         if msgs_batch:
             logger.info("Inserting new batch")
 
