@@ -89,7 +89,7 @@ def http_monitor(
     metrics: Optional[HTTPMetrics]
 
     while not stop_event.is_set():
-        logger.debug("Starting new measurement")
+        logger.info("Starting new measurement")
 
         measurement_started_at = datetime.now(tz=timezone.utc)
 

@@ -1,0 +1,44 @@
+{
+    "broker": {
+        "type": "kafka",
+        "topic": "aiven",
+        "bootstrap_servers": ["127.0.0.1:9092"],
+        "api_version": [1,0,0]
+    },
+    "store": {
+        "type": "postgresql",
+        "dsn": "user=postgres password=test host=127.0.0.1"
+    },
+    "measurements": [
+        {
+            "type": "http",
+            "url": "http://duckduckgo.com/",
+            "measure_every_sec": 10,
+            "timeout_sec": 1
+        },
+        {
+            "type": "http",
+            "url": "http://google.com/",
+            "measure_every_sec": 10,
+            "timeout_sec": 1
+        },
+        {
+            "type": "http",
+            "url": "http://localhost:8081/",
+            "measure_every_sec": 10,
+            "timeout_sec": 1
+        },
+        {
+            "type": "http",
+            "url": "http://localhost:8082/",
+            "measure_every_sec": 7,
+            "timeout_sec": 1
+        },
+        {
+            "type": "http",
+            "url": "http://localhost:8083/",
+            "measure_every_sec": 3,
+            "timeout_sec": 1
+        }
+    ]
+}

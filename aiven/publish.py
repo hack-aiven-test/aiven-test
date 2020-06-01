@@ -116,8 +116,9 @@ def run_publish_from_config(user_config: Dict[str, Any]) -> None:
         for topic_messages in kafka_consumer.poll(timeout_ms=1000).values():
             msgs_batch.extend(pickle.loads(msg.value) for msg in topic_messages)
 
+        print(msgs_batch)
         if msgs_batch:
-            logger.debug("Inserting new batch")
+            logger.info("Inserting new batch")
 
             update_website_id_mapping(conn, website_to_id, msgs_batch)
 

@@ -1,8 +1,8 @@
 Running
 =======
 
-After installing the projectect with `poetry install`, a configuration of the
-project is necessary, this is done using a json file, e.g.:
+After installing the projectect with `poetry install`, the monitoring and
+publishing of metrics need a configuration file:
 
 ```json
 {
@@ -50,64 +50,27 @@ monmon publish /path/to/config.json
 Testing
 =======
 
-- Install PostgreSQL into the test system, createa a database named aiven, and
-  run postgres.
-- Install java, download latest stable version of kafka, and run it:
+To enable the project in a virtualenv:
 
 ```sh
-wget 'ftp://ftp.fu-berlin.de/unix/www/apache/kafka/2.5.0/kafka_2.12-2.5.0.tgz'
-tar xzf kafka_2.12-2.5.0.tgz
-cd kafka_2.12-2.5.0
-bin/zookeeper-server-start.sh config/zookeeper.properties
-bin/kafka-server-start.sh config/server.properties
+poetry shell
+poetry install
 ```
 
-- Produce a configuration file, e.g.:
+To start kafka and postgres:
 
-```json
-{
-    "broker": {
-        "type": "kafka",
-        "topic": "aiven",
-        "bootstrap_servers": ["localhost:9092"]
-    },
-    "store": {
-        "type": "postgresql",
-        "dsn": "dbname=aiven user=postgres"
-    },
-    "measurements": [
-        {
-            "type": "http",
-            "url": "http://duckduckgo.com/",
-            "measure_every_sec": 10,
-            "timeout_sec": 1
-        },
-        {
-            "type": "http",
-            "url": "http://google.com/",
-            "measure_every_sec": 10,
-            "timeout_sec": 1
-        },
-        {
-            "type": "http",
-            "url": "http://localhost:8081/",
-            "measure_every_sec": 10,
-            "timeout_sec": 1
-        },
-        {
-            "type": "http",
-            "url": "http://localhost:8082/",
-            "measure_every_sec": 7,
-            "timeout_sec": 1
-        },
-        {
-            "type": "http",
-            "url": "http://localhost:8083/",
-            "measure_every_sec": 3,
-            "timeout_sec": 1
-        }
-    ]
-}
+```sh
+cd tests
+docker-compose up -d
+```
+
+```sh
+# on one terminal
+monmon monitor config.json
+# on another terminal
+monmon publish config.json
+# entries can be fetched with, password is test
+psql -h localhost -U postgres -d postgres
 ```
 
 Database
